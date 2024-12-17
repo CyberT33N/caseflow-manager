@@ -96,7 +96,7 @@
 .gradient-border {
   position: relative;
   border-radius: theme('borderRadius.lg');
-  padding: 1px; /* Platz für den Gradient */
+  padding: 1em; /* Platz für den Gradient */
   background: linear-gradient(
     45deg,
     rgba(123, 97, 255, 0.5),  /* Material Design Primärfarbe */

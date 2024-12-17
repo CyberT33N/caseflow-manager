@@ -195,25 +195,26 @@ const KanbanBoard = () => {
 
   return (
     // Hauptcontainer mit Dark Mode Support
-    <div className="p-6 bg-background text-foreground">
-      <ModeToggle />
-
+    <div className="min-h-screen p-6 bg-background text-foreground flex flex-col">
       {/* Header mit Titel und "Add Column" Button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold dark:text-white">Board</h1>
-        <Button onClick={addNewColumn} variant="outline" size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Column
-        </Button>
+        <div className="flex gap-2 items-center">
+          <ModeToggle />
+          <Button onClick={addNewColumn} variant="outline" size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Column
+          </Button>
+        </div>
       </div>
       
       {/* Drag & Drop Kontext für das gesamte Board */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="flex gap-6 overflow-x-auto pb-4">
+        <div className="flex gap-6 overflow-x-auto pb-4 flex-1">
           {columns.map((column, index) => (
             <div key={column.id} className="kanban-column bg-card dark:bg-card/90 p-4 rounded-lg shadow-sm min-w-[350px]">
               {/* Spalten-Header mit Titel und Optionen */}
-              <div className={`kanban-header mb-4 bg-background rounded p-2 ${isDarkMode ? 'gradient-border' : ''}`}>
+              <div className={`kanban-header mb-4 bg-background rounded p-4 ${isDarkMode ? 'gradient-border' : ''}`}>
                 {editingColumn === column.id ? (
                   <Input
                     autoFocus

@@ -16,6 +16,8 @@ import {
 import KanbanColumn from './KanbanColumn';
 import { toast } from 'sonner';
 
+import { ModeToggle } from '@/components/mode-toggle';
+
 // Definition des Case-Typs für einzelne Karten
 /**
  * Ein Case repräsentiert eine einzelne Karte auf dem Kanban-Board.
@@ -190,6 +192,8 @@ const KanbanBoard = () => {
 
   return (
     <div className="p-6">
+      {/* <ModeToggle /> */}
+
       {/* Header mit Titel und "Add Column" Button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Board</h1>

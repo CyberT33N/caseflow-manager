@@ -25,12 +25,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ cases }) => {
               ref={provided.innerRef}
               {...provided.draggableProps}
               {...provided.dragHandleProps}
-              className="kanban-card"
+              className="p-4 mb-3 bg-background dark:bg-muted rounded-lg shadow-sm hover:shadow-md transition-shadow"
             >
               {/* Case Titel */}
-              <h3 className="font-medium mb-2">{case_.title}</h3>
+              <h3 className="font-medium mb-2 dark:text-foreground">{case_.title}</h3>
               {/* Zeitstempel der letzten Aktualisierung */}
-              <p className="text-sm text-gray-500">Updated {case_.updatedAt}</p>
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground">Updated {case_.updatedAt}</p>
             </div>
           )}
         </Draggable>

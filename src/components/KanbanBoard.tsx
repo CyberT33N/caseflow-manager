@@ -1,10 +1,10 @@
-// Import useState Hook
+// Import der notwendigen React-Hooks
 import { useState } from 'react';
-// Import der Drag & Drop Funktionalität
+// Import der Drag & Drop Funktionalität von hello-pangea
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
-// Import der Icons für die UI
+// Import der Lucide Icons für die Benutzeroberfläche
 import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
-// Import der UI Komponenten
+// Import der UI-Komponenten aus der lokalen Komponenten-Bibliothek
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import KanbanColumn from './KanbanColumn';
 import { toast } from 'sonner';
-
 import { ModeToggle } from '@/components/mode-toggle';
+import { useTheme } from '@/components/theme-provider';
 
 // Definition des Case-Typs für einzelne Karten
 /**
@@ -41,6 +41,9 @@ export type Column = {
 };
 
 const KanbanBoard = () => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
   // State für die Kanban-Spalten mit Initial-Daten
   /**
    * Der State für die Kanban-Spalten wird initialisiert mit vier Spalten:
@@ -191,12 +194,13 @@ const KanbanBoard = () => {
   };
 
   return (
-    <div className="p-6">
-      {/* <ModeToggle /> */}
+    // Hauptcontainer mit Dark Mode Support
+    <div className="p-6 bg-background text-foreground">
+      <ModeToggle />
 
       {/* Header mit Titel und "Add Column" Button */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Board</h1>
+        <h1 className="text-2xl font-bold dark:text-white">Board</h1>
         <Button onClick={addNewColumn} variant="outline" size="sm">
           <Plus className="w-4 h-4 mr-2" />
           Add Column
@@ -207,13 +211,14 @@ const KanbanBoard = () => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="flex gap-6 overflow-x-auto pb-4">
           {columns.map((column, index) => (
-            <div key={column.id} className="kanban-column">
+            <div key={column.id} className="kanban-column bg-card dark:bg-card/90 p-4 rounded-lg shadow-sm min-w-[350px]">
               {/* Spalten-Header mit Titel und Optionen */}
-              <div className="kanban-header mb-4">
+              <div className={`kanban-header mb-4 bg-background rounded p-2 ${isDarkMode ? 'gradient-border' : ''}`}>
                 {editingColumn === column.id ? (
                   <Input
                     autoFocus
                     defaultValue={column.title}
+                    className="dark:bg-background dark:text-foreground"
                     onBlur={(e) => updateColumnTitle(column.id, e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -223,7 +228,7 @@ const KanbanBoard = () => {
                   />
                 ) : (
                   <div className="flex items-center justify-between w-full">
-                    <span>{column.title}</span>
+                    <span className="font-medium text-foreground dark:text-white">{column.title}</span>
                     {/* Dropdown-Menü für Spaltenaktionen */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -268,7 +273,7 @@ const KanbanBoard = () => {
                 <Button 
                   onClick={() => addNewCase(column.id)}
                   variant="ghost" 
-                  className="w-full mt-4"
+                  className="w-full mt-4 dark:hover:bg-muted"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Create Case

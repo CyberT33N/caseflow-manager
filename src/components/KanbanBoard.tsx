@@ -40,15 +40,14 @@ export type Column = {
   cases: Case[];
 };
 
+// Hauptkomponente für das Kanban-Board
 const KanbanBoard = () => {
+  // Theme-Hook für Dark Mode Erkennung
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
   // State für die Kanban-Spalten mit Initial-Daten
-  /**
-   * Der State für die Kanban-Spalten wird initialisiert mit vier Spalten:
-   * TODO, IN PROGRESS, DONE und ARCHIVED.
-   */
+  // Jede Spalte enthält eine ID, einen Titel und ein Array von Cases
   const [columns, setColumns] = useState<Column[]>([
     {
       id: 'todo',
@@ -79,124 +78,92 @@ const KanbanBoard = () => {
     },
   ]);
 
-  // State für die aktuell bearbeitete Spalte
-  /**
-   * Der State für die aktuell bearbeitete Spalte wird initialisiert mit null.
-   * Wenn eine Spalte bearbeitet wird, wird ihre ID hier gespeichert.
-   */
+  // State für die Bearbeitung von Spaltentiteln
+  // Speichert die ID der aktuell bearbeiteten Spalte oder null wenn keine bearbeitet wird
   const [editingColumn, setEditingColumn] = useState<string | null>(null);
 
-  // Handler für das Ende einer Drag & Drop Operation
-  /**
-   * Wenn eine Drag & Drop Operation beendet wird, wird dieser Handler aufgerufen.
-   * Er aktualisiert die Position der Cases in den Spalten entsprechend.
-   */
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
-
-    const { source, destination } = result;
-
-    if (source.droppableId === destination.droppableId) {
-      // Neuanordnung innerhalb derselben Spalte
-      const column = columns.find(col => col.id === source.droppableId);
-      if (!column) return;
-
-      const newCases = Array.from(column.cases);
-      const [removed] = newCases.splice(source.index, 1);
-      newCases.splice(destination.index, 0, removed);
-
-      setColumns(columns.map(col => 
-        col.id === source.droppableId ? { ...col, cases: newCases } : col
-      ));
-    } else {
-      // Verschieben zwischen verschiedenen Spalten
-      const sourceColumn = columns.find(col => col.id === source.droppableId);
-      const destColumn = columns.find(col => col.id === destination.droppableId);
-      if (!sourceColumn || !destColumn) return;
-
-      const sourceCases = Array.from(sourceColumn.cases);
-      const destCases = Array.from(destColumn.cases);
-      const [removed] = sourceCases.splice(source.index, 1);
-      destCases.splice(destination.index, 0, removed);
-
-      setColumns(columns.map(col => {
-        if (col.id === source.droppableId) {
-          return { ...col, cases: sourceCases };
-        }
-        if (col.id === destination.droppableId) {
-          return { ...col, cases: destCases };
-        }
-        return col;
-      }));
-
-      toast.success(`Case moved to ${destColumn.title}`);
-    }
-  };
-
-  // Funktion zum Hinzufügen eines neuen Cases
-  /**
-   * Diese Funktion fügt ein neues Case zu einer Spalte hinzu.
-   * Das neue Case erhält eine eindeutige ID, einen Titel und ein Update-Datum.
-   */
-  const addNewCase = (columnId: string) => {
-    const newCase: Case = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: `Case ${Math.floor(Math.random() * 1000)}`,
-      updatedAt: 'Just now',
-    };
-
-    setColumns(columns.map(col => 
-      col.id === columnId 
-        ? { ...col, cases: [newCase, ...col.cases] }
-        : col
-    ));
-
-    toast.success('New case created');
-  };
-
   // Funktion zum Hinzufügen einer neuen Spalte
-  /**
-   * Diese Funktion fügt eine neue Spalte zum Kanban-Board hinzu.
-   * Die neue Spalte erhält eine eindeutige ID, einen Titel und eine leere Liste von Cases.
-   */
+  // Generiert eine eindeutige ID und fügt eine leere Spalte am Ende hinzu
   const addNewColumn = () => {
-    const newColumn: Column = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: 'New Column',
-      cases: [],
-    };
-
-    setColumns([...columns, newColumn]);
-    setEditingColumn(newColumn.id);
-    toast.success('New column added');
-  };
-
-  // Funktion zum Löschen einer Spalte
-  /**
-   * Diese Funktion löscht eine Spalte vom Kanban-Board.
-   * Alle Cases in der Spalte werden gelöscht.
-   */
-  const deleteColumn = (columnId: string) => {
-    setColumns(columns.filter(col => col.id !== columnId));
-    toast.success('Column deleted');
+    const id = crypto.randomUUID();
+    setColumns((prev) => [...prev, { id, title: 'New Column', cases: [] }]);
+    setEditingColumn(id); // Startet sofort die Bearbeitung des Titels
   };
 
   // Funktion zum Aktualisieren des Spaltentitels
-  /**
-   * Diese Funktion aktualisiert den Titel einer Spalte.
-   * Der neue Titel wird im State gespeichert.
-   */
+  // Wird aufgerufen, wenn der Benutzer die Bearbeitung beendet
   const updateColumnTitle = (columnId: string, newTitle: string) => {
-    setColumns(columns.map(col => 
-      col.id === columnId ? { ...col, title: newTitle } : col
-    ));
-    setEditingColumn(null);
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === columnId ? { ...col, title: newTitle || col.title } : col
+      )
+    );
+    setEditingColumn(null); // Beendet den Bearbeitungsmodus
+  };
+
+  // Funktion zum Löschen einer Spalte
+  // Entfernt die Spalte und zeigt eine Bestätigungsmeldung
+  const deleteColumn = (columnId: string) => {
+    setColumns((prev) => prev.filter((col) => col.id !== columnId));
+    toast.success('Column deleted successfully');
+  };
+
+  // Funktion zum Hinzufügen eines neuen Cases
+  // Fügt einen neuen Case mit eindeutiger ID zur angegebenen Spalte hinzu
+  const addNewCase = (columnId: string) => {
+    const newCase: Case = {
+      id: crypto.randomUUID(),
+      title: 'New Case',
+      updatedAt: 'Just now',
+    };
+
+    setColumns((prev) =>
+      prev.map((col) =>
+        col.id === columnId
+          ? { ...col, cases: [...col.cases, newCase] }
+          : col
+      )
+    );
+  };
+
+  // Handler für das Ende einer Drag & Drop Operation
+  // Aktualisiert die Position des Cases in den Spalten
+  const handleDragEnd = (result) => {
+    if (!result.destination) return; // Wenn keine Zielposition, abbrechen
+
+    const { source, destination } = result;
+
+    // Wenn Quelle und Ziel gleich sind, nichts tun
+    if (
+      source.droppableId === destination.droppableId &&
+      source.index === destination.index
+    ) {
+      return;
+    }
+
+    // Kopie des aktuellen Zustands erstellen
+    const newColumns = [...columns];
+
+    // Quell- und Zielspalte finden
+    const sourceColumn = newColumns.find((col) => col.id === source.droppableId);
+    const destColumn = newColumns.find((col) => col.id === destination.droppableId);
+
+    if (!sourceColumn || !destColumn) return;
+
+    // Case aus Quellspalte entfernen
+    const [movedCase] = sourceColumn.cases.splice(source.index, 1);
+
+    // Case in Zielspalte einfügen
+    destColumn.cases.splice(destination.index, 0, movedCase);
+
+    // State aktualisieren
+    setColumns(newColumns);
   };
 
   return (
     // Hauptcontainer mit Dark Mode Support
     <div className="min-h-screen p-6 bg-background text-foreground flex flex-col">
-      {/* Header mit Titel und "Add Column" Button */}
+      {/* Header mit Titel und Buttons */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold dark:text-white">Board</h1>
         <div className="flex gap-2 items-center">
@@ -256,26 +223,43 @@ const KanbanBoard = () => {
               </div>
 
               {/* Droppable Bereich für Cases */}
+              {/* Definiert einen Bereich, in den Elemente per Drag & Drop platziert werden können */}
+              {/* droppableId ist die eindeutige ID der Spalte für das Drag & Drop System */}
               <Droppable droppableId={column.id}>
+                {/* Render-Props-Funktion, die von Droppable aufgerufen wird */}
+                {/* provided enthält wichtige Properties für das Drag & Drop System */}
                 {(provided) => (
                   <div
+                    // Verbindet die DOM-Referenz mit dem Drag & Drop System
                     ref={provided.innerRef}
+                    // Fügt alle notwendigen Props für das Dropping hinzu
                     {...provided.droppableProps}
+                    // Garantiert eine Mindesthöhe, damit man auch in leere Spalten droppen kann
                     className="min-h-[200px]"
                   >
+                    {/* Rendert die einzelnen Cases in der Spalte als Draggable Elemente */}
                     <KanbanColumn cases={column.cases} />
+                    {/* Platzhalter der die Größe des gezogenen Elements annimmt */}
+                    {/* Verhindert, dass die Spalte sich zusammenzieht während des Ziehens */}
+                    {/* Sorgt für ein smoothes Layout ohne Sprünge während Drag & Drop */}
                     {provided.placeholder}
                   </div>
                 )}
               </Droppable>
 
-              {/* "Create Case" Button nur in der ersten Spalte */}
+              {/* "Create Case" Button wird nur in der ersten Spalte (TODO) angezeigt */}
+              {/* index === 0 prüft, ob wir in der ersten Spalte sind */}
+              {/* Der && Operator rendert den Button nur wenn die Bedingung true ist */}
               {index === 0 && (
                 <Button 
+                  // Ruft die addNewCase Funktion mit der aktuellen Spalten-ID auf
                   onClick={() => addNewCase(column.id)}
+                  // Ghost Variant für einen subtilen Look
                   variant="ghost" 
+                  // Volle Breite, Abstand nach oben und Hover-Effekt im Dark Mode
                   className="w-full mt-4 dark:hover:bg-muted"
                 >
+                  {/* Plus-Icon mit Abstand nach rechts */}
                   <Plus className="w-4 h-4 mr-2" />
                   Create Case
                 </Button>
